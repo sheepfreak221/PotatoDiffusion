@@ -22,7 +22,7 @@ Tested on an **AMD Radeon RX 570 with 4 GB VRAM**.
 
 [![FLUX Workflow](media/video_thumbnail.png)](https://www.youtube.com/watch?v=LmJZF9xP_-Y)
 
-*Click to watch the full FLUX workflow on YouTube: prompt, generation and upscaling.*
+*Click to watch the full FLUX.2 [klein] 4B  workflow on YouTube: prompt, generation and upscaling.*
 
 ### Interface
 
@@ -432,8 +432,8 @@ Suggested starting points for a 4 GB GPU:
 | Model  | Starting resolution |
 | ------ | ------------------: |
 | SD 1.5 |             512×512 |
-| SDXL   |             768×768 |
-| FLUX   |             512×512 |
+| SDXL   |             1024×1024 |
+| FLUX   |             768x768 |
 
 Quantized GGUF models are also strongly recommended for low-end hardware.
 
@@ -541,7 +541,7 @@ The result is a small, self-contained WebUI that can sit on top of Vulkan-native
 
 The target is not a datacenter GPU.
 
-The target is the hardware sitting in the drawer that everyone else already declared obsolete. 🥔
+The target is the hardware sitting in the drawer that everyone else already declared obsolete.
 
 ---
 
