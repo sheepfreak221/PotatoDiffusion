@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PotatoDiffusion</title>
+<script>
+/* Design anwenden, bevor das erste gerendert wird (kein Umschalt-Blitzen) */
+(function () {
+  var mode = "dark";              // Standard = dunkel, "system" folgt dem Betriebssystem
+  try { mode = localStorage.getItem("sdwebui.theme") || "dark"; } catch (e) { /* ignore */ }
+  var dark = true;
+  if (mode !== "dark" && mode !== "light" && window.matchMedia) {
+    dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  } else {
+    dark = mode !== "light";
+  }
+  document.documentElement.style.colorScheme = dark ? "dark" : "light";
+  if (!dark) document.documentElement.setAttribute("data-theme", "light");
+})();
+</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237c5cff'/%3E%3Cpath d='M16 6.5l8 9.5-8 9.5-8-9.5z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">&#9670;</span>
+    <div class="brand-text">
+      <h1>Potato<span>Diffusion</span></h1>
+      <small id="deviceInfo" class="muted">Vulkan-Backend wird gepr&uuml;ft&hellip;</small>
+    </div>
+  </div>
+
+  <nav class="tabs" id="tabs" role="tablist">
+    <button class="tab is-active" data-key="sd15" role="tab">SD 1.5</button>
+    <button class="tab" data-key="sdxl" role="tab">SDXL</button>
+    <button class="tab" data-key="flux" role="tab">FLUX</button>
+    <button class="tab" data-key="upscale" role="tab">Upscale</button>
+  </nav>
+
+  <div class="top-actions">
+    <span class="pill" id="statusPill" data-state="idle">bereit</span>
+    <button class="icon-btn" id="btnSettings" title="Einstellungen &amp; Modellpfade">&#9881;</button>
+  </div>
+</header>
+
+<main class="layout">
+
+  <!-- ---------------- Parameter ---------------- -->
+  <aside class="panel params-panel">
+    <div class="panel-head">
+      <h2 id="paramsTitle">Parameter</h2>
+      <span class="badge" id="modelBadge">SD 1.5</span>
+    </div>
+
+    <div id="paramForm" class="param-form"></div>
+
+    <div class="form-actions" id="formActions">
+      <button class="btn ghost" id="btnReset" type="button">Zur&uuml;cksetzen</button>
+      <button class="btn ghost" id="btnSaveDefaults" type="button" title="Aktuelle Werte als Standard f&uuml;r diesen Reiter in config.json speichern">
+        Als Standard speichern
+      </button>
+    </div>
+  </aside>
+
+  <!-- ---------------- B&uuml;hne ---------------- -->
+  <section class="stage">
+
+    <div class="panel stage-actions">
+      <button class="btn primary" id="btnGenerate" type="button">
+        <span class="btn-ico">&#9654;</span> Generieren
+      </button>
+      <button class="btn danger" id="btnCancel" type="button" disabled>Abbrechen</button>
+
+      <div class="seed-chip" id="seedChip" title="Verwendeter Seed (klick = &uuml;bernehmen)">
+        <span class="muted">Seed</span> <b id="seedValue">&mdash;</b>
+      </div>
+
+      <div class="spacer"></div>
+      <span class="muted mono" id="elapsed">0.0 s</span>
+    </div>
+
+    <div class="panel image-panel">
+      <div class="image-frame" id="imageFrame">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-glyph">&#9671;</div>
+          <p>Noch kein Bild.</p>
+          <p class="muted">Prompt eingeben und <b>Generieren</b> dr&uuml;cken<br>(Strg+Enter geht auch).</p>
+        </div>
+        <img id="resultImage" alt="" hidden>
+        <div class="scanline" id="scanline" hidden></div>
+      </div>
+
+      <div class="progress-area" hidden id="progressArea">
+        <div class="progress-meta">
+          <span id="phaseLabel">Start</span>
+          <span id="stepLabel" class="mono muted"></span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+
+      <div class="upscale-note" id="upscaleNote" hidden></div>
+
+      <details class="cmd-box" id="cmdBox">
+        <summary id="cmdSummary">sd-cli Befehl</summary>
+        <pre id="cmdText" class="mono"></pre>
+      </details>
+    </div>
+
+    <details class="panel log-panel" id="logPanel">
+      <summary><span>Log</span> <span class="muted mono" id="logCount"></span></summary>
+      <pre id="log" class="mono"></pre>
+    </details>
+
+    <div class="panel gallery-panel" id="galleryPanel">
+      <div class="panel-head">
+        <h2>Galerie</h2>
+        <button class="btn ghost small" id="btnRefreshGallery" type="button">Aktualisieren</button>
+      </div>
+      <div class="gallery" id="gallery"></div>
+      <p class="muted" id="galleryEmpty" hidden>Erzeugte Bilder erscheinen hier.</p>
+    </div>
+
+    <div class="panel gallery-panel" id="upscalePanel" hidden>
+      <div class="panel-head">
+        <h2>Upscale-Verlauf</h2>
+        <button class="btn ghost small" id="btnRefreshUpscale" type="button">Aktualisieren</button>
+      </div>
+      <div class="gallery" id="upscaleList"></div>
+      <p class="muted" id="upscaleEmpty" hidden>Hochskalierte Bilder landen hier (nicht in der Galerie).</p>
+    </div>
+
+  </section>
+</main>
+
+<!-- ---------------- Einstellungen ---------------- -->
+<div class="modal" id="settingsModal" hidden>
+  <div class="modal-card wide">
+    <div class="modal-head">
+      <h2>Einstellungen &amp; Modellpfade</h2>
+      <button class="icon-btn" data-close="settingsModal" type="button">&#10005;</button>
+    </div>
+
+    <div class="modal-body">
+      <section class="settings-group">
+        <h3>Darstellung</h3>
+        <div class="grid2">
+          <label class="field">
+            <span>Design<em class="hint">Styleswitcher</em></span>
+            <select id="themeSelect">
+              <option value="system">System (automatisch)</option>
+              <option value="dark">Dunkel</option>
+              <option value="light">Hell</option>
+            </select>
+          </label>
+          <div class="field">
+            <span>Vorschau</span>
+            <div class="theme-preview" id="themePreview" aria-hidden="true">
+              <span class="tp-box"></span><span class="tp-box"></span><span class="tp-line"></span>
+            </div>
+          </div>
+        </div>
+        <p class="muted field-hint">Wird im Browser gespeichert; „System" folgt der
+          Betriebssystem-Einstellung f&uuml;r helles/dunkles Erscheinungsbild.</p>
+      </section>
+
+      <section class="settings-group">
+        <h3>Allgemein</h3>
+        <div class="grid2">
+          <label class="field">
+            <span>sd-cli Pfad</span>
+            <div class="input-row">
+              <input type="text" data-cfg="sd_cli" spellcheck="false">
+              <button class="icon-btn" type="button" data-browse="sd_cli" title="Durchsuchen">&#8981;</button>
+            </div>
+          </label>
+          <label class="field">
+            <span>Ausgabe-Ordner</span>
+            <div class="input-row">
+              <input type="text" data-cfg="output_dir" spellcheck="false">
+              <button class="icon-btn" type="button" data-browse="output_dir" title="Durchsuchen">&#8981;</button>
+            </div>
+          </label>
+          <label class="field">
+            <span>Real-ESRGAN Binary</span>
+            <div class="input-row">
+              <input type="text" data-cfg="upscale.binary" spellcheck="false">
+              <button class="icon-btn" type="button" data-browse="upscale.binary" title="Durchsuchen">&#8981;</button>
+            </div>
+          </label>
+          <label class="field">
+            <span>Upscale-Modell-Ordner</span>
+            <div class="input-row">
+              <input type="text" data-cfg="upscale.model_dir" spellcheck="false">
+              <button class="icon-btn" type="button" data-browse="upscale.model_dir" title="Durchsuchen">&#8981;</button>
+            </div>
+          </label>
+          <label class="field">
+            <span>Upscale-Ausgabe-Ordner <em class="muted">(nicht in der Galerie)</em></span>
+            <div class="input-row">
+              <input type="text" data-cfg="upscale.output_dir" spellcheck="false">
+              <button class="icon-btn" type="button" data-browse="upscale.output_dir" title="Durchsuchen">&#8981;</button>
+            </div>
+          </label>
+          <label class="field">
+            <span>Listen-Host</span>
+            <input type="text" data-cfg="listen.host" spellcheck="false">
+          </label>
+          <label class="field">
+            <span>Port <em class="muted">(nach Neustart aktiv)</em></span>
+            <input type="number" data-cfg="listen.port">
+          </label>
+        </div>
+      </section>
+
+      <div id="modelSettings"></div>
+    </div>
+
+    <div class="modal-foot">
+      <span class="muted" id="settingsHint">Pfade werden in <code>config.json</code> gespeichert.</span>
+      <div>
+        <button class="btn ghost" data-close="settingsModal" type="button">Schlie&szlig;en</button>
+        <button class="btn primary" id="btnSaveSettings" type="button">Speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ---------------- Datei-W&auml;hler ---------------- -->
+<div class="modal" id="pickerModal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2>Datei w&auml;hlen</h2>
+      <button class="icon-btn" data-close="pickerModal" type="button">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-row picker-path">
+        <button class="icon-btn" id="pickerUp" type="button" title="Nach oben">&#8593;</button>
+        <input type="text" id="pickerDir" spellcheck="false">
+        <button class="btn ghost small" id="pickerGo" type="button">Los</button>
+      </div>
+      <div class="picker-list" id="pickerList"></div>
+    </div>
+    <div class="modal-foot"><span class="muted" id="pickerHint">Nur Modelle (.gguf, .safetensors, &hellip;)</span></div>
+  </div>
+</div>
+
+<!-- ---------------- Lightbox ---------------- -->
+<div class="modal" id="lightbox" hidden>
+  <div class="modal-card lightbox-card">
+    <div class="modal-head">
+      <h2 id="lbTitle">Bild</h2>
+      <button class="icon-btn" data-close="lightbox" type="button">&#10005;</button>
+    </div>
+    <div class="modal-body lb-body">
+      <div class="lb-image"><img id="lbImage" alt=""></div>
+      <div class="lb-meta">
+        <label class="field"><span>Prompt</span><textarea id="lbPrompt" rows="4" readonly></textarea></label>
+        <label class="field"><span>Negativ-Prompt</span><textarea id="lbNeg" rows="2" readonly></textarea></label>
+        <div class="grid2" id="lbStats"></div>
+        <pre class="mono lb-cmd" id="lbCmd"></pre>
+        <div class="lb-actions">
+          <button class="btn ghost" id="lbReuse" type="button">&Uuml;bernehmen</button>
+          <button class="btn ghost" id="lbUpscale" type="button" title="Bild im Upscale-Reiter hochskalieren">Upscalen</button>
+          <a class="btn ghost" id="lbDownload" download>Herunterladen</a>
+          <button class="btn danger" id="lbDelete" type="button">L&ouml;schen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upload-Quelle fuer den Upscale-Reiter: visuell versteckt, aber im DOM aktiv,
+     damit das <label for="upFile"> den Datei-Dialog in jedem Browser oeffnet -->
+<input type="file" id="upFile" class="file-input" accept="image/*" aria-label="Bild hochladen">
+
+<div id="toasts" aria-live="polite"></div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

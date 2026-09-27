@@ -1,0 +1,26 @@
+# PotatoDiffusion – Python-Abhängigkeiten
+#
+# Installation (frische Maschine / venv):
+#     python3 -m pip install -r requirements.txt
+# Starten:
+#     ./start.sh          (oder: python3 app.py)
+#
+# Getestet mit: Python 3.11 – 3.14 · Flask 3.1.3 · Pillow 12.1.1
+
+# --- zwingend ---------------------------------------------------------------
+# Webserver (Werkzeug, Jinja2, itsdangerous, click, blinker kommen automatisch mit)
+Flask>=3.0,<4
+
+# --- empfohlen --------------------------------------------------------------
+# Liest Breite/Höhe von PNG/JPG für den Upscale-Verlauf und die Seiten-Metadaten.
+# Technisch optional (in app.py abgefangen): ohne Pillow läuft die UI problemlos,
+# es fehlen nur die Größenangaben in den JSON-Seitendateien.
+Pillow>=10.0
+
+# --- keine pip-Pakete -------------------------------------------------------
+# Diese gehören NICHT hierher, sie liegen als fertige Binärdateien im Projekt:
+#   bin/sd-cli                     stable-diffusion.cpp   (Generierung)
+#   bin/realesrgan-ncnn-vulkan     Real-ESRGAN            (Upscale)
+#   models/…                       checkpoints, VAE, Text-Encoder, Upscale-Modelle
+# Für die GPU-Läufe wird zudem eine Vulkan-Treiberinstallation benötigt
+# (hier: Mesa/RADV für die AMD RX 570).

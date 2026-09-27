@@ -1,0 +1,135 @@
+{
+  "sd_cli": "bin/sd-cli",
+  "output_dir": "outputs",
+  "listen": {
+    "host": "127.0.0.1",
+    "port": 7860
+  },
+  "upscale": {
+    "binary": "bin/realesrgan-ncnn-vulkan",
+    "model_dir": "models/upscale",
+    "output_dir": "upscale",
+    "default_model": "realesrgan-x4plus",
+    "tile": 0,
+    "gpuid": 0,
+    "defaults": {
+      "model": "realesrgan-x4plus",
+      "scale": 4,
+      "tile": 0,
+      "gpuid": 0
+    }
+  },
+  "models": {
+    "sd15": {
+      "label": "SD 1.5",
+      "paths": {
+        "model": "models/checkpoints/SD1.5/mistoonAnime_v30.safetensors",
+        "clip_l": ""
+      },
+      "defaults": {
+        "prompt": "",
+        "negative_prompt": "lowres, bad anatomy, bad hands, worst quality, jpeg artifacts, watermark",
+        "width": 512,
+        "height": 512,
+        "steps": 20,
+        "cfg_scale": 7.0,
+        "guidance": 0,
+        "sampling_method": "euler_a",
+        "scheduler": "auto",
+        "seed": -1,
+        "random_seed": true,
+        "batch_count": 1,
+        "clip_skip": -1,
+        "vae_tiling": false,
+        "offload_to_cpu": false,
+        "backend": "diffusion=vulkan0,te=vulkan0,vae=vulkan0",
+        "weight_type": "",
+        "max_vram": "",
+        "threads": 0,
+        "preview": true,
+        "extra_args": "",
+        "upscale_after": false,
+        "upscale_model": "realesrgan-x4plus",
+        "upscale_scale": 4,
+        "upscale_tile": 0,
+        "upscale_gpuid": 0
+      }
+    },
+    "sdxl": {
+      "label": "SDXL",
+      "paths": {
+        "model": "models/checkpoints/SDXL/sdxlMergeheaven_betaM15-q4_0.gguf",
+        "clip_l": "",
+        "clip_g": ""
+      },
+      "defaults": {
+        "prompt": "",
+        "negative_prompt": "lowres, bad anatomy, bad hands, worst quality, jpeg artifacts, watermark",
+        "width": 768,
+        "height": 768,
+        "steps": 20,
+        "cfg_scale": 6.5,
+        "guidance": 0,
+        "sampling_method": "euler_a",
+        "scheduler": "auto",
+        "seed": -1,
+        "random_seed": true,
+        "batch_count": 1,
+        "clip_skip": -1,
+        "vae_tiling": true,
+        "offload_to_cpu": false,
+        "backend": "diffusion=vulkan0,te=vulkan0,vae=vulkan0",
+        "weight_type": "",
+        "max_vram": "",
+        "threads": 0,
+        "preview": true,
+        "extra_args": "",
+        "upscale_after": false,
+        "upscale_model": "realesrgan-x4plus",
+        "upscale_scale": 4,
+        "upscale_tile": 0,
+        "upscale_gpuid": 0
+      }
+    },
+    "flux": {
+      "label": "FLUX",
+      "paths": {
+        "diffusion_model": "models/diffusion-models/FLUX/flux-2-klein-4b-Q4_K_M.gguf",
+        "llm": "models/textencoder/Qwen3-4B-Q4_K_M.gguf",
+        "vae": "models/vae/ae.safetensors",
+        "vae_format": "flux2",
+        "clip_l": "",
+        "clip_g": "",
+        "t5xxl": ""
+      },
+      "defaults": {
+        "prompt": "",
+        "negative_prompt": "",
+        "width": 512,
+        "height": 512,
+        "steps": 4,
+        "cfg_scale": 1.0,
+        "guidance": 3.5,
+        "sampling_method": "euler",
+        "scheduler": "auto",
+        "seed": -1,
+        "random_seed": true,
+        "batch_count": 1,
+        "clip_skip": -1,
+        "vae_tiling": true,
+        "offload_to_cpu": false,
+        "backend": "diffusion=vulkan0,te=cpu,vae=vulkan0",
+        "weight_type": "",
+        "max_vram": "",
+        "threads": 0,
+        "preview": true,
+        "extra_args": "",
+        "upscale_after": false,
+        "upscale_model": "realesrgan-x4plus",
+        "upscale_scale": 4,
+        "upscale_tile": 0,
+        "upscale_gpuid": 0
+      }
+    }
+  }
+}
