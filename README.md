@@ -20,9 +20,9 @@ Tested on an **AMD Radeon RX 570 with 4 GB VRAM**.
 
 ### FLUX Workflow
 
-[![FLUX Workflow](media/screenshot_light.png)](media/flux2_workflow.mp4)
+[![FLUX Workflow](media/video_thumbnail.png)](https://www.youtube.com/watch?v=LmJZF9xP_-Y)
 
-*Click to watch the full FLUX workflow: prompt, generation and upscaling.*
+*Click to watch the full FLUX workflow on YouTube: prompt, generation and upscaling.*
 
 ### Interface
 
