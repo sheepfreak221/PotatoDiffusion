@@ -16,6 +16,22 @@ Tested on an **AMD Radeon RX 570 with 4 GB VRAM**.
 
 ---
 
+## Demo
+
+### FLUX Workflow
+
+[![FLUX Workflow](media/screenshot_light.png)](media/flux2_workflow.mp4)
+
+*Click to watch the full FLUX workflow: prompt, generation and upscaling.*
+
+### Interface
+
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Light Mode](media/screenshot_light.png) | ![Dark Mode](media/screenshot_dark.png) |
+
+---
+
 ## Features
 
 ### AI Image Generation
