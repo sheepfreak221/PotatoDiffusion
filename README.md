@@ -146,12 +146,6 @@ python3 -m pip install -r requirements.txt
 ### Start the WebUI
 
 ```bash
-python3 app.py
-```
-
-or:
-
-```bash
 ./start.sh
 ```
 
@@ -160,6 +154,20 @@ The default address is:
 ```text
 http://127.0.0.1:7860
 ```
+
+---
+
+## First Start
+
+On the first start, `start.sh` performs a few checks:
+
+- Creates the required directory structure if it doesn't exist yet
+- Verifies that the required binaries are present and executable:
+- If either binary is missing, the script exits with a message pointing to the official repositories:
+  - sd-cli: https://github.com/leejet/stable-diffusion.cpp
+  - realesrgan-ncnn-vulkan: https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan
+
+Make sure they are executable (chmod +x).
 
 ---
 
